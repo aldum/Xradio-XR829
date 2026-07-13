@@ -215,7 +215,7 @@ static struct pm_qos_constraints memory_bw_constraints = {
 	.target_value = PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE,
 	.default_value = PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE,
 	.no_constraint_value = PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE,
-	.type = PM_QOS_SUM,
+	.type = PM_QOS_MAX,
 	.notifiers = &memory_bandwidth_notifier,
 };
 static struct xr_pm_qos_object memory_bandwidth_pm_qos = {

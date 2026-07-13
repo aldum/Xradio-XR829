@@ -22,7 +22,6 @@
 #include "xradio.h"
 #include "platform.h"
 #include "sbus.h"
-#include <linux/sunxi-gpio.h>
 #include <linux/gpio.h>
 #include <linux/types.h>
 //#include <linux/power/scenelock.h>
@@ -34,24 +33,21 @@ MODULE_DESCRIPTION("XRadioTech WLAN driver");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("xradio_wlan");
 
-extern void sunxi_wlan_set_power(bool on);
-extern int sunxi_wlan_get_bus_index(void);
-extern int sunxi_wlan_get_oob_irq(int *, int *);
-
+/*
+ * MAINLINE (mmc-pwrseq) port for A100/A133: the vendor sunxi-wlan platform
+ * driver (sunxi_wlan_set_power/_get_bus_index/_get_oob_irq) is not present.
+ * Power + SDIO enumeration are handled by DT mmc-pwrseq-simple on &mmc1, and
+ * interrupts use the in-band SDIO IRQ (build WITHOUT CONFIG_XRADIO_USE_GPIO_IRQ,
+ * DT: cap-sdio-irq). So these become no-ops.
+ */
 static int wlan_bus_id;
 static u32 gpio_irq_handle;
 static int irq_flags, wakeup_enable;
 
 int xradio_get_syscfg(void)
 {
-	int wlan_bus_index = 0;
-	wlan_bus_index = sunxi_wlan_get_bus_index();
-	if (wlan_bus_index < 0)
-		return wlan_bus_index;
-	else
-		wlan_bus_id = wlan_bus_index;
-	gpio_irq_handle = sunxi_wlan_get_oob_irq(&irq_flags, &wakeup_enable);
-	return wlan_bus_index;
+	/* mmc-pwrseq handles power/enumeration; in-band SDIO IRQ used. */
+	return 0;
 }
 /*********************Interfaces called by xradio core. *********************/
 int  xradio_plat_init(void)
@@ -66,23 +62,15 @@ void xradio_plat_deinit(void)
 
 int xradio_wlan_power(int on)
 {
-	int ret = 0;
-	if (on) {
-	    ret = xradio_get_syscfg();
-		if (ret < 0)
-			return ret;
-	}
-	sunxi_wlan_set_power(on);
-	mdelay(100);
-	return ret;
+	/* Powered by DT mmc-pwrseq-simple (wlan_regon/power_en); nothing to do. */
+	return 0;
 }
 
 void xradio_sdio_detect(int enable)
 {
-	MCI_RESCAN_CARD(wlan_bus_id);
-	xradio_dbg(XRADIO_DBG_ALWY, "%s SDIO card %d\n",
-				enable?"Detect":"Remove", wlan_bus_id);
-	mdelay(10);
+	/* Card auto-enumerates on &mmc1 via mmc-pwrseq; no manual bus rescan. */
+	xradio_dbg(XRADIO_DBG_ALWY, "%s SDIO (mmc-pwrseq auto-detect)\n",
+				enable ? "Detect" : "Remove");
 }
 
 static irqreturn_t xradio_gpio_irq_handler(int irq, void *sbus_priv)

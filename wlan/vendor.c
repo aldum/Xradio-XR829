@@ -313,10 +313,10 @@ static void keep_alive_send(struct ieee80211_local *local, struct net_device *de
 
 static int
 keep_alive_cmp(void *priv,
-	struct list_head *a, struct list_head *b)
+	const struct list_head *a, const struct list_head *b)
 {
-	struct keepalivenode *ap = container_of(a, struct keepalivenode, list);
-	struct keepalivenode *bp = container_of(b, struct keepalivenode, list);
+	const struct keepalivenode *ap = container_of(a, struct keepalivenode, list);
+	const struct keepalivenode *bp = container_of(b, struct keepalivenode, list);
 	long diff;
 
 	diff = ap->next_jiffies - bp->next_jiffies;
@@ -615,16 +615,16 @@ void xradio_vendor_init(struct wiphy *wiphy)
 
 void xr_do_gettimeofday(struct timeval *tv)
 {
-	struct timespec now;
+	struct timespec64 now;
 
-	getnstimeofday(&now);
+	ktime_get_real_ts64(&now);
 	tv->tv_sec = now.tv_sec;
 	tv->tv_usec = now.tv_nsec/1000;
 }
 
-void xr_get_monotonic_boottime(struct timespec *ts)
+void xr_get_monotonic_boottime(struct timespec64 *ts)
 {
-	*ts = ktime_to_timespec(ktime_get_boottime());
+	ktime_get_boottime_ts64(ts);
 }
 
 

@@ -108,12 +108,12 @@ static ssize_t sta_connected_time_read(struct file *file, char __user *userbuf,
 					size_t count, loff_t *ppos)
 {
 	struct sta_info *sta = file->private_data;
-	struct timespec uptime;
+	struct timespec64 uptime;
 	struct tm result;
 	long connected_time_secs;
 	char buf[100];
 	int res;
-	ktime_get_ts(&uptime);
+	ktime_get_ts64(&uptime);
 	connected_time_secs = uptime.tv_sec - sta->last_connected;
 	time64_to_tm(connected_time_secs, 0, &result);
 	result.tm_year -= 70;

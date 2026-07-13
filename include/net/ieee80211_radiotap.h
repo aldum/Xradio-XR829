@@ -37,7 +37,7 @@
 
 #include <linux/if_ether.h>
 #include <linux/kernel.h>
-#include <asm/unaligned.h>
+#include <linux/unaligned.h>
 
 /* Base version of the radiotap packet header data */
 #define PKTHDR_RADIOTAP_VERSION		0

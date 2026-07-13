@@ -3091,7 +3091,7 @@ void xradio_rx_cb(struct xradio_vif *priv,
 	if ((ieee80211_is_beacon(mgmt->frame_control) ||
 		ieee80211_is_probe_resp(mgmt->frame_control))
 		&& !arg->status) {
-		struct timespec ts;
+		struct timespec64 ts;
 		u64 tv_nsec;
 		xr_get_monotonic_boottime(&ts);
 		tv_nsec = ts.tv_nsec;

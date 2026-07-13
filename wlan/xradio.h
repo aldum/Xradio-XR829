@@ -75,11 +75,11 @@
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 #include <uapi/linux/time.h>
+struct timeval { long tv_sec; long tv_usec; };
 #include <linux/timekeeping.h>
-#include <linux/timekeeping32.h>
 
 void xr_do_gettimeofday(struct timeval *tv);
-void xr_get_monotonic_boottime(struct timespec *ts);
+void xr_get_monotonic_boottime(struct timespec64 *ts);
 
 #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)) */
 

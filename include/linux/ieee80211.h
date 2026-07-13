@@ -19,7 +19,7 @@
 #include <linux/if_ether.h>
 #include <linux/etherdevice.h>
 #include <asm/byteorder.h>
-#include <asm/unaligned.h>
+#include <linux/unaligned.h>
 
 /*
  * DS bit usage

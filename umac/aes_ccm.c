@@ -6,6 +6,7 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
+#include <crypto/internal/cipher.h>
 
 #include <linux/kernel.h>
 #include <linux/types.h>
@@ -148,3 +149,5 @@ void mac80211_aes_key_free(struct crypto_cipher *tfm)
 {
 	crypto_free_cipher(tfm);
 }
+
+MODULE_IMPORT_NS(CRYPTO_INTERNAL);
