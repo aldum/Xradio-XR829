@@ -295,7 +295,7 @@ int thread_dpa_up(struct task_struct *p, s8 *prio_index)
 			.sched_priority = g_dpa[idx].priority
 		};
 		bh_printk(XRADIO_DBG_NIY, "%s=%d\n", __func__, idx);
-		ret = sched_setscheduler(p, g_dpa[idx].policy, &param);
+		ret = xr_sched_set(p, g_dpa[idx].policy, param.sched_priority);
 		if (!ret)
 			*prio_index = idx;
 		else
@@ -325,7 +325,7 @@ int thread_dpa_down(struct task_struct *p, u8 *prio_index)
 			.sched_priority = g_dpa[idx].priority
 		};
 		bh_printk(XRADIO_DBG_NIY, "%s=%d\n", __func__, idx);
-		ret = sched_setscheduler(p, g_dpa[idx].policy, &param);
+		ret = xr_sched_set(p, g_dpa[idx].policy, param.sched_priority);
 		if (!ret)
 			*prio_index = idx;
 		else
@@ -345,8 +345,8 @@ static inline int proc_set_priority(struct xradio_common *hw_priv, u8 idx)
 		.sched_priority = g_dpa[idx].priority
 	};
 	hw_priv->proc.proc_prio = idx;
-	return sched_setscheduler(hw_priv->proc.proc_thread,
-			g_dpa[idx].policy, &param);
+	return xr_sched_set(hw_priv->proc.proc_thread,
+			g_dpa[idx].policy, param.sched_priority);
 }
 int dpa_proc_tx;
 int dpa_proc_rx;
@@ -427,8 +427,8 @@ static int xradio_proc(void *arg)
 #if BH_PROC_DPA
 	ret = proc_set_priority(hw_priv, 3);
 #else
-	ret = sched_setscheduler(hw_priv->proc.proc_thread,
-			SCHED_FIFO, &param);
+	ret = xr_sched_set(hw_priv->proc.proc_thread,
+			SCHED_FIFO, param.sched_priority);
 #endif
 	if (ret)
 		bh_printk(XRADIO_DBG_WARN, "%s sched_setscheduler failed(%d)\n",
@@ -1284,7 +1284,7 @@ static int xradio_bh(void *arg)
 	int vif_selected;
 
 	bh_printk(XRADIO_DBG_MSG, "%s\n", __func__);
-	ret = sched_setscheduler(hw_priv->bh_thread, SCHED_FIFO, &param);
+	ret = xr_sched_set(hw_priv->bh_thread, SCHED_FIFO, param.sched_priority);
 	if (ret)
 		bh_printk(XRADIO_DBG_WARN, "%s sched_setscheduler failed(%d)\n",
 			__func__, ret);

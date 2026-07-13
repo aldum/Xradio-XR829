@@ -17,6 +17,26 @@
 #include <linux/workqueue.h>
 #include <linux/sched.h>
 #include <linux/atomic.h>
+
+/* 6.12 exports only sched_set_fifo/_fifo_low/_normal to modules;
+ * sched_setscheduler[_nocheck] are not exported. Map (policy,prio) onto them:
+ * FIFO prio<=1 -> low RT level, FIFO prio>1 -> single mid RT level
+ * (the driver's 25/50/75/99 tuning levels collapse), else normal. */
+#ifndef XR_HAVE_SCHED_SET
+#define XR_HAVE_SCHED_SET
+static inline int xr_sched_set(struct task_struct *p, int policy, int prio)
+{
+	if (policy == SCHED_FIFO || policy == SCHED_RR) {
+		if (prio <= 1)
+			sched_set_fifo_low(p);
+		else
+			sched_set_fifo(p);
+	} else {
+		sched_set_normal(p, 0);
+	}
+	return 0;
+}
+#endif
 #include <net/mac80211.h>
 #include <asm/bitops.h>
 
