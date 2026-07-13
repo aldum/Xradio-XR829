@@ -7743,4 +7743,88 @@ void cfg80211_update_owe_info_event(struct net_device *netdev,
 				    struct cfg80211_update_owe_info *owe_info,
 				    gfp_t gfp);
 
+
+/* === XR829_612_COMPAT_START === */
+#ifndef XR829_612_COMPAT
+#define XR829_612_COMPAT
+
+struct cfg80211_tx_status {
+	u64 cookie;
+	u64 tx_tstamp;
+	u64 ack_tstamp;
+	const u8 *buf;
+	size_t len;
+	bool ack;
+};
+
+#define XR_IEEE80211_MLD_MAX_NUM_LINKS 15
+struct cfg80211_assoc_failure {
+	const u8 *ap_mld_addr;
+	struct cfg80211_bss *bss[XR_IEEE80211_MLD_MAX_NUM_LINKS];
+	bool timeout;
+};
+
+struct cfg80211_rx_info {
+	int freq;
+	int sig_dbm;
+	bool have_link_id;
+	u8 link_id;
+	const u8 *buf;
+	size_t len;
+	u32 flags;
+	u64 rx_tstamp;
+	u64 ack_tstamp;
+};
+
+extern struct cfg80211_bss *__cfg80211_get_bss(
+	struct wiphy *wiphy, struct ieee80211_channel *channel,
+	const u8 *bssid, const u8 *ssid, size_t ssid_len,
+	enum ieee80211_bss_type bss_type, enum ieee80211_privacy privacy,
+	u32 use_for);
+extern void cfg80211_mgmt_tx_status_ext(struct wireless_dev *wdev,
+	struct cfg80211_tx_status *status, gfp_t gfp);
+extern void cfg80211_assoc_failure(struct net_device *dev,
+	struct cfg80211_assoc_failure *data);
+extern bool cfg80211_rx_mgmt_ext(struct wireless_dev *wdev,
+	struct cfg80211_rx_info *info);
+
+#define cfg80211_get_bss(w, c, bs, ss, sl, bt, p) \
+	__cfg80211_get_bss((w), (c), (bs), (ss), (sl), (bt), (p), 1)
+
+static inline void _xr_mgmt_tx_status(
+	struct wireless_dev *wdev, u64 cookie, const u8 *buf, size_t len,
+	bool ack, gfp_t gfp)
+{
+	struct cfg80211_tx_status _s = {
+		.cookie = cookie, .buf = buf, .len = len, .ack = ack,
+	};
+	cfg80211_mgmt_tx_status_ext(wdev, &_s, gfp);
+}
+#define cfg80211_mgmt_tx_status(w, c, b, l, a, g) \
+	_xr_mgmt_tx_status((w), (c), (b), (l), (a), (g))
+
+static inline bool _xr_rx_mgmt(struct wireless_dev *wdev, int freq,
+	int sig_dbm, const u8 *buf, size_t len, u32 flags)
+{
+	struct cfg80211_rx_info _r = {
+		.freq = freq, .sig_dbm = sig_dbm, .buf = buf,
+		.len = len, .flags = flags,
+	};
+	return cfg80211_rx_mgmt_ext(wdev, &_r);
+}
+#define cfg80211_rx_mgmt(w, f, s, b, l, fl) \
+	_xr_rx_mgmt((w), (f), (s), (b), (l), (fl))
+
+static inline void _xr_assoc_timeout(struct net_device *dev,
+	struct cfg80211_bss *bss)
+{
+	struct cfg80211_assoc_failure _af = { .timeout = true };
+	_af.bss[0] = bss;
+	cfg80211_assoc_failure(dev, &_af);
+}
+#define cfg80211_assoc_timeout(d, b) _xr_assoc_timeout((d), (b))
+
+#endif /* XR829_612_COMPAT */
+/* === XR829_612_COMPAT_END === */
+
 #endif /* __NET_CFG80211_H */
